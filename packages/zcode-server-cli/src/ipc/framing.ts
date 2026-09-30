@@ -6,10 +6,15 @@ export function encodeJsonLine(value: unknown): string {
 
 export class JsonLineDecoder {
   private buffer = "";
+  private readonly decoder = new TextDecoder();
   public constructor(private readonly options: { maxFrameBytes?: number } = {}) {}
 
   public push(chunk: string | Uint8Array): unknown[] {
-    const text = typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk);
+    // 字节块可能截断 UTF-8 字符，必须保留解码状态，避免产生替换字符。
+    // 字符串块已解码，先刷新挂起字节，保证混合输入的原始顺序。
+    const text = typeof chunk === "string"
+      ? this.decoder.decode() + chunk
+      : this.decoder.decode(chunk, { stream: true });
     this.buffer += text;
     if (
       Buffer.byteLength(this.buffer, "utf8") >
@@ -40,6 +45,7 @@ export class JsonLineDecoder {
   }
 
   public finish(): void {
+    this.buffer += this.decoder.decode();
     if (this.buffer.trim()) throw new Error("Incomplete JSONL frame");
   }
 }
