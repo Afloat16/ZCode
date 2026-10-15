@@ -12,9 +12,10 @@ export class JsonLineDecoder {
   public push(chunk: string | Uint8Array): unknown[] {
     // 字节块可能截断 UTF-8 字符，必须保留解码状态，避免产生替换字符。
     // 字符串块已解码，先刷新挂起字节，保证混合输入的原始顺序。
-    const text = typeof chunk === "string"
-      ? this.decoder.decode() + chunk
-      : this.decoder.decode(chunk, { stream: true });
+    const text =
+      typeof chunk === "string"
+        ? this.decoder.decode() + chunk
+        : this.decoder.decode(chunk, { stream: true });
     this.buffer += text;
     if (
       Buffer.byteLength(this.buffer, "utf8") >

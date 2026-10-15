@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { JsonLineDecoder } from "../src/ipc/framing.js";
 
 test("JSONL decoding is invariant to every UTF-8 byte split", () => {
